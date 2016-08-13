@@ -1,0 +1,21 @@
+{
+  "name": "doha",
+  "version": "1.0.0",
+  "description": "Digital Ocean High Availability Monitor",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "digitalocean",
+    "ha",
+    "high",
+    "availability",
+    "floating",
+    "ip"
+  ],
+  "author": "saary",
+  "license": "ISC"
+}
