@@ -6,33 +6,33 @@ var parseArgs = require('minimist');
 
 var argv = parseArgs(process.argv.slice(2));
 
-var mainUrl = argv.main || process.env.MAIN_URL;
-var localUrl = argv.local || process.env.LOCAL_URL;
-var doToken = argv.token || process.env.DO_TOKEN;
-var dropletId = argv.droplet || process.env.DROPLET_ID;
-var floatingIp = argv.floatingIp || process.env.FLOATING_IP;
-var rate = argv.rate || 1000;
+var primaryUrl = argv.primary || process.env.PRIMARY_URL; // The primary url to monitor
+var secondaryUrl = argv.secondary || process.env.SECONDARY_URL; // The secondary url to which we fallback
+var doToken = argv.token || process.env.DO_TOKEN; // DigitalOcean API token
+var dropletId = argv.droplet || process.env.DROPLET_ID; // The droplet id to whcih we fallback in case of an error
+var floatingIp = argv.floatingIp || process.env.FLOATING_IP; // The floating ip which we direct to the droplet
+var heartbeatRate = argv.rate || process.env.HEARTBEAT_RAT || 1000; // The rate in which we check the primary url (ms)
 
 var client = digitalocean.client(doToken); 
 
 co(function*() {
   while (true) {
     // ping the main service
-    let res = yield request.get(mainUrl);
+    let res = yield request.get(primaryUrl);
     if (res.statusCode === 200) {
       // all is fine, wait a second and recheck
-      wait(rate);
+      wait(heartbeatRate);
       continue;
     }
 
-    console.error('Failed to get 200 answer from %s got [%s]', mainUrl, res.statusCode, res.body);
+    console.error('Failed to get 200 answer from %s got [%s]', primaryUrl, res.statusCode, res.body);
 
     // -- something is wrong
     // ping local service to make sure we are ready to switch to this instance
-    let localRes = yield request.get(localUrl);
-    if (localRes.statusCode !== 200) {
+    let secondaryRes = yield request.get(secondaryUrl);
+    if (secondaryRes.statusCode !== 200) {
       // local instance is not ready, retry from the top
-      console.error('Failed to get 200 answer from %s got [%s]', localUrl, localRes.statusCode, localRes.body);
+      console.error('Failed to get 200 answer from %s got [%s]', secondaryUrl, secondaryRes.statusCode, secondaryRes.body);
       wait(10000);
       continue;
     }
@@ -42,7 +42,7 @@ co(function*() {
 
       let assign = yield client.floatingIps.assign(floatingIp, dropletId);
       console.log('Assign result: ', assign);
-      wait(rate);
+      wait(heartbeatRate);
     }
     catch(err) {
       console.error('Faile to assign floating ip to %s', dropletId, err);
