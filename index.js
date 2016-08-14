@@ -11,6 +11,7 @@ var localUrl = argv.local || process.env.LOCAL_URL;
 var doToken = argv.token || process.env.DO_TOKEN;
 var dropletId = argv.droplet || process.env.DROPLET_ID;
 var floatingIp = argv.floatingIp || process.env.FLOATING_IP;
+var rate = argv.rate || 1000;
 
 var client = digitalocean.client(doToken); 
 
@@ -20,7 +21,7 @@ co(function*() {
     let res = yield request.get(mainUrl);
     if (res.statusCode === 200) {
       // all is fine, wait a second and recheck
-      wait(1000);
+      wait(rate);
       continue;
     }
 
@@ -41,7 +42,7 @@ co(function*() {
 
       let assign = yield client.floatingIps.assign(floatingIp, dropletId);
       console.log('Assign result: ', assign);
-      wait(1000);
+      wait(rate);
     }
     catch(err) {
       console.error('Faile to assign floating ip to %s', dropletId, err);
