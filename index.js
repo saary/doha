@@ -26,6 +26,7 @@ co(function*() {
     }
 
     console.error('Failed to get 200 answer from %s got [%s]', primaryUrl, res.statusCode, res.body);
+    console.log('Trying to secondary url', secondaryUrl);
 
     // -- something is wrong
     // ping local service to make sure we are ready to switch to this instance
@@ -48,4 +49,6 @@ co(function*() {
       console.error('Faile to assign floating ip to %s', dropletId, err);
     }  
   }
+}).catch(function(er) {
+  console.error('Uncaught error:', err, '\n', err.stack);
 });
