@@ -21,7 +21,7 @@ co(function*() {
     let res = yield request.get(primaryUrl);
     if (res.statusCode === 200) {
       // all is fine, wait a second and recheck
-      wait(heartbeatRate);
+      yield wait(heartbeatRate);
       continue;
     }
 
@@ -34,7 +34,7 @@ co(function*() {
     if (secondaryRes.statusCode !== 200) {
       // local instance is not ready, retry from the top
       console.error('Failed to get 200 answer from %s got [%s]', secondaryUrl, secondaryRes.statusCode, secondaryRes.body);
-      wait(10000);
+      yield wait(10000);
       continue;
     }
 
@@ -43,7 +43,7 @@ co(function*() {
 
       let assign = yield client.floatingIps.assign(floatingIp, dropletId);
       console.log('Assign result: ', assign);
-      wait(heartbeatRate);
+      yield wait(heartbeatRate);
     }
     catch(err) {
       console.error('Faile to assign floating ip to %s', dropletId, err);
